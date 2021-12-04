@@ -1,7 +1,19 @@
 use std::{num::ParseIntError, str::FromStr};
+use std::fs;
 
 fn main() {
-    println!("Hello, world!");
+    
+    let file_content = fs::read_to_string("input.txt").expect("Can't find input");
+
+    let mut game : Game = file_content.parse().unwrap();
+
+    let idx = game.find_winner();
+
+        println!( "Game won by board {} , with extraction {}, out number {}", idx.0,
+             idx.1,
+            game.boards[idx.0].sum_unmarked() * idx.1);
+
+        
 }
 
 
@@ -17,7 +29,7 @@ struct Game {
 
 impl Game {
 
-    pub fn find_winner(&mut self) -> usize {
+    pub fn find_winner(&mut self) -> (usize, i32) {
         for number in &self.winning {
             for b in &mut self.boards {
 
@@ -29,12 +41,10 @@ impl Game {
 
             for (i, win) in self.boards.iter().enumerate() {
                 if win.is_winning() {
-                    return i;
+                    return (i, *number);
                 }
             }
         }
-
-        
 
         panic!("can't find winner");
     }
@@ -46,14 +56,16 @@ impl Game {
 impl Board {
 
 
-    pub fn mark(& self, number : &i32 ) -> Option<(usize,usize)> {
+    pub fn mark(& self, to_mark : &i32 ) -> Option<(usize,usize)> {
 
-        self.numbers.iter().enumerate()
-            .map_while( |k|  {
-                    k.1.iter().position( |z| z.eq(number))
-                        .map(|pos| ( k.0 , pos))})
-            .next()
-    
+        self.numbers.iter()
+            .enumerate()
+            .flat_map( | cols | {
+                cols.1.iter().enumerate()
+                    .position( | rows | rows.1.eq(to_mark) )
+                    .map( |y: usize | ( cols.0, y ) )  
+            }).next()
+        
     }
 
     pub fn is_winning(& self ) -> bool {
@@ -72,6 +84,17 @@ impl Board {
         }
         false    
     }
+
+    pub fn sum_unmarked(&self) -> i32 {
+
+        self.numbers.iter().enumerate()
+            .flat_map(| cols | {
+
+                cols.1.iter().enumerate()
+                    .filter( move | &rows | !self.marked.contains( &( cols.0, rows.0 )) )
+                    .map( | y | y.1)
+            }).sum()
+        }
 
 
 }
@@ -150,7 +173,11 @@ mod test {
         assert_eq!( 3, gameboard.boards.len());
         assert_eq!( 22, gameboard.boards[0].numbers[0][0]);
 
-        assert_eq!( 2, gameboard.find_winner());
+        assert_eq!( (2,24), gameboard.find_winner());
+
+        assert_eq!( 188, gameboard.boards[2].sum_unmarked() );
+        assert_eq!( 4512, gameboard.boards[2].sum_unmarked() *24);
+        
 
     }
 
