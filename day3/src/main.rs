@@ -1,9 +1,9 @@
-use std::fs;
 use std::cmp::Ordering;
+use std::fs;
 
 fn main() {
     let file_content = fs::read_to_string("input.txt").expect("Can't find input");
-    let file_content : Vec<String> = file_content.lines().map(String::from).collect();
+    let file_content: Vec<String> = file_content.lines().map(String::from).collect();
 
     let gamma = find_measure(&file_content, Measure::Gamma);
     let epsilon = find_measure(&file_content, Measure::Epsilon);
@@ -13,12 +13,25 @@ fn main() {
     let co2_scrub = find_second_measure(&file_content, SubMeasure::CO2Scrub);
     let o2_gen = find_second_measure(&file_content, SubMeasure::O2Gen);
 
-    println!("Life Support rating {}", co2_scrub*o2_gen);
+    println!("Life Support rating {}", co2_scrub * o2_gen);
 }
+
+
+fn filter_codes(codes: Vec<&str>, pos: usize, val: char) -> Vec<&str> {
+    if codes.len() == 1 {
+        codes
+    } else {
+        codes
+            .into_iter()
+            .filter(|&c| c.chars().nth(pos).unwrap() == val)
+            .collect()
+    }
+}
+
 
 enum Measure {
     Gamma,
-    Epsilon
+    Epsilon,
 }
 
 impl Measure {
@@ -38,35 +51,28 @@ impl Measure {
 
 enum SubMeasure {
     CO2Scrub,
-    O2Gen
+    O2Gen,
 }
 
 impl SubMeasure {
-
-    pub fn determine_most_common(&self,  v : &[(usize,char)])  -> char {
-        let is_one = v.iter().filter(|&x| x.1 == '1' ).count();
-        let is_zero  = v.iter().filter(|&x| x.1 =='0' ).count();
+    pub fn determine_most_common(&self, v: &[(usize, char)]) -> char {
+        let is_one = v.iter().filter(|&x| x.1 == '1').count();
+        let is_zero = v.iter().filter(|&x| x.1 == '0').count();
 
         match self {
-            SubMeasure::O2Gen => {
-                match is_one.cmp(&is_zero) {
-                    Ordering::Greater => '1',
-                    Ordering::Less => '0',
-                    Ordering::Equal => '1'
-                }
+            SubMeasure::O2Gen => match is_one.cmp(&is_zero) {
+                Ordering::Greater => '1',
+                Ordering::Less => '0',
+                Ordering::Equal => '1',
             },
-            SubMeasure::CO2Scrub => {
-                match is_one.cmp(&is_zero) {
-                    Ordering::Greater => '0',
-                    Ordering::Less => '1',
-                    Ordering::Equal => '0'
-                }
-
-            }
+            SubMeasure::CO2Scrub => match is_one.cmp(&is_zero) {
+                Ordering::Greater => '0',
+                Ordering::Less => '1',
+                Ordering::Equal => '0',
+            },
         }
     }
 }
-
 
 fn find_measure(vec: &[String], m: Measure) -> u32 {
     let mut bits = String::from("");
@@ -90,54 +96,47 @@ fn find_measure(vec: &[String], m: Measure) -> u32 {
     u32::from_str_radix(bits.as_str(), 2).unwrap()
 }
 
-
-fn find_second_measure( vec: &[String], s : SubMeasure ) -> u32 {
-
+fn find_second_measure(vec: &[String], s: SubMeasure) -> u32 {
     let word_length = vec[0].len();
-    let mut valid : Vec<usize> = (0..vec.len()).collect() ;
+    let mut valid: Vec<usize> = (0..vec.len()).collect();
 
     for col in 0..word_length {
+        let interesting: Vec<(usize, char)> = vec
+            .iter()
+            .enumerate()
+            .map(|x| (x.0, x.1.chars().nth(col).unwrap()))
+            .collect::<Vec<(usize, char)>>()
+            .iter()
+            .enumerate()
+            .filter(|&x| valid.contains(&x.0))
+            .map(|r| *r.1)
+            .collect();
 
-        let interesting : Vec<(usize, char)> = vec.iter().enumerate()
-                    .map(|x|  (x.0, x.1.chars().nth(col).unwrap()) )
-                    .collect::<Vec<(usize,char)>>()
-                    .iter()
-                    .enumerate()
-                    .filter(|&x| valid.contains(&x.0))
-                    .map(|r| *r.1)
-                    .collect();
+        let c = s.determine_most_common(&interesting);
 
-            let c =s.determine_most_common(&interesting);
+        interesting.iter().filter(|&z| z.1.ne(&c)).for_each(|z| {
+            if let Some(pos) = valid.iter().position(|x| *x == z.0) {
+                valid.remove(pos);
+            }
+        });
 
-            interesting.iter()
-                .filter(|&z| z.1.ne(&c))
-                .for_each(|z| {
-                    if let Some(pos) = valid.iter().position(|x| *x == z.0) {
-                        valid.remove(pos);
-                    }
-                } );
-
-        
         if valid.len() == 1 {
-            return  u32::from_str_radix(&vec[valid[0]], 2).unwrap();
+            return u32::from_str_radix(&vec[valid[0]], 2).unwrap();
         }
         if valid.is_empty() {
-            valid = (0..word_length).collect() ;
+            valid = (0..word_length).collect();
         }
-
-
     }
 
     panic!("No available solution!??!");
 }
 
-
 #[cfg(test)]
 mod test {
-    use crate::{find_measure, SubMeasure,Measure , find_second_measure};
+    use crate::{find_measure, find_second_measure, Measure, SubMeasure};
 
     fn data() -> Vec<String> {
-        let original  = String::from(
+        let original = String::from(
             "00100
 11110
 10110
@@ -152,15 +151,11 @@ mod test {
 01010",
         );
 
-        original.lines()
-        .map(|x| x.into())
-            .collect()
+        original.lines().map(|x| x.into()).collect()
     }
-
 
     #[test]
     fn day3_01_test() {
-    
         let converted = data();
 
         assert_eq!(22, find_measure(&converted, Measure::Gamma));
@@ -168,11 +163,10 @@ mod test {
     }
 
     #[test]
-    fn day3_02_test(){
+    fn day3_02_test() {
         let original = data();
 
-        assert_eq!(23, find_second_measure( &original, SubMeasure::O2Gen));
-        assert_eq!(10, find_second_measure( &original, SubMeasure::CO2Scrub));
-
+        assert_eq!(23, find_second_measure(&original, SubMeasure::O2Gen));
+        assert_eq!(10, find_second_measure(&original, SubMeasure::CO2Scrub));
     }
 }
