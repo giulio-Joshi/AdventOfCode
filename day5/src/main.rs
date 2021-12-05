@@ -1,7 +1,16 @@
 use std::{error::Error, num::ParseIntError, str::FromStr, collections::{HashMap, hash_map::Entry}};
+use std::fs;
 
 fn main() {
-    println!("Hello, world!");
+    let file_content = fs::read_to_string("input.txt").expect("Can't find input");
+
+    let all_vents :Vec<Vent> = file_content.lines()
+            .map(|x| x.parse::<Vent>().unwrap())
+             .collect();
+
+
+    println!("Found {} overlapping vents" , count_double_points( &all_vents, false));
+    println!("Found {} overlapping vents with diagonal " , count_double_points( &all_vents, true));
 }
 
 #[derive(Debug)]
@@ -11,12 +20,12 @@ struct Vent {
 }
 
 
-fn count_double_points( vents : &Vec<Vent> ) -> i32 {
+fn count_double_points( vents : &Vec<Vent>, diagonal: bool ) -> i32 {
 
     let mut matched_points: HashMap<(i32,i32), i32> = HashMap::new();
 
     let all_points = vents.iter()
-        .flat_map( | x | x.get_points())
+        .flat_map( | x | x.get_points(diagonal))
         .fold(matched_points,  |mut accum,dot |{
 
             let entry = accum.entry(dot);
@@ -39,35 +48,6 @@ fn count_double_points( vents : &Vec<Vent> ) -> i32 {
         .filter( |value| value >= &2)
         .count() as i32
 }
-
-/***
- *  created because of diagonal lines
- * 
- * /
-fn get_overlapping( board_dim: (i32,i32), min_value: usize, vents: Vec<Vent>) -> usize {
-
-    //let mut matched_points: HashMap<(i32,i32), i32> = HashMap::new();
-
-    let mut counter = 0;
-
-    for x in 0..board_dim.0 {
-        for y in 0..board_dim.1 {
-
-            let tot = vents.iter()
-                .filter( |v| v.touches((x,y)) )
-                .count();
-
-            if tot >= min_value   {
-                counter+=tot;
-            }
-
-        }
-    }
-
-    counter
-
-}
- */
 
 impl Vent {
 
@@ -93,66 +73,43 @@ impl Vent {
         }
     }
 
-
-    pub fn touches(&self, point: (i32,i32)) -> bool{
-
-        //
-        // Barbarically created using this solution
-        //  https://stackoverflow.com/questions/328107/how-can-you-determine-a-point-is-between-two-other-points-on-a-line-segment
-        //
-
-        let crossproduct= (point.1 - self.start.1 ) * ( self.end.0 -self.start.0) 
-                            - (point.0 - self.start.0 ) * ( self.end.1 -self.start.1 );
-    
-        if crossproduct != 0 {
-            return false;
-        }
-
-        let dotproduct   = (point.0 - self.start.0 ) * ( self.end.0 - self.start.0 ) 
-            + ( point.1 - self.start.1) * (self.end.1 - self.start.1);
-
-        if dotproduct <0 {
-            return false;
-        }
-
-        let square_length_hba = (self.end.0 - self.start.0) * (self.end.0 - self.start.0) 
-                        -  (self.end.1 - self.start.1) * (self.end.1 - self.start.1); 
-
-        if dotproduct > square_length_hba {
-            return false;
-        }
-        
-        true
-    }
-
-    
-    pub fn get_points(&self) -> Vec<(i32,i32)> {
+    pub fn get_points(&self, diagonal: bool) -> Vec<(i32,i32)> {
 
         let  mut c : Vec<(i32,i32)> = vec!(  );
 
-        if self.start.0 == self.end.0 {
+        let range_vert = (self.start.1 - self.end.1).abs()+1;
+        let range_horiz = (self.start.0 - self.end.0).abs()+1;
+        let vert_dir = (self.start.1 -self.end.1).signum() * -1;
+        let horiz_dir = (self.start.0 - self.end.0).signum() * -1;
 
-            let range_vert = (self.start.1 - self.end.1).abs()+1;
-            let vert_dir = (self.start.1 -self.end.1).signum() * -1;
+        if self.start.0 == self.end.0 {
 
             for y in 0..range_vert {
                 c.push( (self.start.0 , self.start.1+(y*vert_dir) ) );
             }
+        } else if self.start.1 == self.end.1 {
 
-
-        } 
-        
-        if self.start.1 == self.end.1 {
-
-            let range_horiz = (self.start.0 - self.end.0).abs()+1;
-            let horiz_dir = (self.start.0 - self.end.0).signum() * -1;
             for x in 0..range_horiz {
                 c.push( (self.start.0+(x*horiz_dir) , self.start.1 ) );
             }
 
+        } else if diagonal {
+
+            // diagonal line of 45 degrees
+
+            let mut tot : Vec<(i32,i32)>= (0..range_horiz ).zip( 0..range_vert)
+                    .map( |p| {
+                        (self.start.0+( p.0*horiz_dir), self.start.1+( p.1*vert_dir) )
+                    })
+                    .collect();
+
+            c.append(&mut tot);
+ 
+        } else {
+            // skip
         }
 
-        println!("found points {:?} ", c);
+        //println!("found points {:?} ", c);
         c
     }
 
@@ -204,7 +161,8 @@ mod test {
         assert_eq!( 0, list[0].start.0);
         assert_eq!( 2, list[9].end.1);
 
-        assert_eq!(5,count_double_points( &list));
+        assert_eq!(5,count_double_points( &list, false));
+        assert_eq!(12,count_double_points( &list, true));
 
     }
 }
