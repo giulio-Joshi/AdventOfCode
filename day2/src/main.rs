@@ -67,9 +67,9 @@ fn main() {
     let file_content = fs::read_to_string("input.txt")
         .expect("Can't find input");
 
-    let dir: Vec<Direction> = file_content.split('\n').map( |x| x.parse::<Direction>().unwrap() ).collect();
-
-    let final_pos = dir.into_iter().fold(Position::new(), | pos ,dir|{
+    let final_pos = file_content.split('\n')
+        .map( |x| x.parse::<Direction>().unwrap() )
+        .fold(Position::new(), | pos ,dir|{
         pos.add_direction(dir)
     });
 

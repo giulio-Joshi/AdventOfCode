@@ -1,4 +1,4 @@
-use std::{error::Error, num::ParseIntError, str::FromStr, collections::{HashMap, hash_map::Entry}};
+use std::{num::ParseIntError, str::FromStr, collections::{HashMap, hash_map::Entry}};
 use std::fs;
 
 fn main() {
@@ -7,7 +7,6 @@ fn main() {
     let all_vents :Vec<Vent> = file_content.lines()
             .map(|x| x.parse::<Vent>().unwrap())
              .collect();
-
 
     println!("Found {} overlapping vents" , count_double_points( &all_vents, false));
     println!("Found {} overlapping vents with diagonal " , count_double_points( &all_vents, true));
@@ -19,10 +18,9 @@ struct Vent {
     end: (i32, i32),
 }
 
+fn count_double_points( vents : &[Vent], diagonal: bool ) -> i32 {
 
-fn count_double_points( vents : &Vec<Vent>, diagonal: bool ) -> i32 {
-
-    let mut matched_points: HashMap<(i32,i32), i32> = HashMap::new();
+    let matched_points: HashMap<(i32,i32), i32> = HashMap::new();
 
     let all_points = vents.iter()
         .flat_map( | x | x.get_points(diagonal))
@@ -31,7 +29,7 @@ fn count_double_points( vents : &Vec<Vent>, diagonal: bool ) -> i32 {
             let entry = accum.entry(dot);
 
             match entry {
-                Entry::Vacant(to_insert) => {
+                Entry::Vacant(_) => {
                     accum.insert(dot, 1);
                 }
                 Entry::Occupied(mut prev) => {
@@ -51,55 +49,33 @@ fn count_double_points( vents : &Vec<Vent>, diagonal: bool ) -> i32 {
 
 impl Vent {
 
-    pub fn max_x( &self) -> i32 {
-        match self.start.0.cmp(&self.end.0)  {
-            std::cmp::Ordering::Less => {
-                self.end.0
-            },
-            _ => {
-                self.start.0
-            }
-        }
-    }
-
-    pub fn max_y( &self) -> i32 {
-        match self.start.1.cmp(&self.end.1)  {
-            std::cmp::Ordering::Less => {
-                self.end.1
-            },
-            _ => {
-                self.start.1
-            }
-        }
-    }
-
     pub fn get_points(&self, diagonal: bool) -> Vec<(i32,i32)> {
 
         let  mut c : Vec<(i32,i32)> = vec!(  );
 
         let range_vert = (self.start.1 - self.end.1).abs()+1;
         let range_horiz = (self.start.0 - self.end.0).abs()+1;
-        let vert_dir = (self.start.1 -self.end.1).signum() * -1;
-        let horiz_dir = (self.start.0 - self.end.0).signum() * -1;
+        let vert_dir = (self.start.1 -self.end.1).signum();
+        let horiz_dir = (self.start.0 - self.end.0).signum();
 
         if self.start.0 == self.end.0 {
 
             for y in 0..range_vert {
-                c.push( (self.start.0 , self.start.1+(y*vert_dir) ) );
+                c.push( (self.start.0 , self.start.1 - y*vert_dir ) );
             }
         } else if self.start.1 == self.end.1 {
 
             for x in 0..range_horiz {
-                c.push( (self.start.0+(x*horiz_dir) , self.start.1 ) );
+                c.push( (self.start.0 - x*horiz_dir , self.start.1 ) );
             }
 
         } else if diagonal {
 
-            // diagonal line of 45 degrees
+            // diagonal line of 45 degrees, its like a ladder
 
             let mut tot : Vec<(i32,i32)>= (0..range_horiz ).zip( 0..range_vert)
                     .map( |p| {
-                        (self.start.0+( p.0*horiz_dir), self.start.1+( p.1*vert_dir) )
+                        (self.start.0 - p.0 * horiz_dir, self.start.1 -  p.1 * vert_dir  )
                     })
                     .collect();
 
@@ -108,8 +84,6 @@ impl Vent {
         } else {
             // skip
         }
-
-        //println!("found points {:?} ", c);
         c
     }
 
@@ -163,6 +137,5 @@ mod test {
 
         assert_eq!(5,count_double_points( &list, false));
         assert_eq!(12,count_double_points( &list, true));
-
     }
 }

@@ -16,19 +16,6 @@ fn main() {
     println!("Life Support rating {}", co2_scrub * o2_gen);
 }
 
-
-fn filter_codes(codes: Vec<&str>, pos: usize, val: char) -> Vec<&str> {
-    if codes.len() == 1 {
-        codes
-    } else {
-        codes
-            .into_iter()
-            .filter(|&c| c.chars().nth(pos).unwrap() == val)
-            .collect()
-    }
-}
-
-
 enum Measure {
     Gamma,
     Epsilon,
