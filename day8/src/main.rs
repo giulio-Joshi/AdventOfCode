@@ -52,39 +52,33 @@ impl<'a> Signal {
     }
 
     pub fn count_not_easy(&self) -> i32 {
-        let numbers : Vec<i32> = self.output
+        let numbers: Vec<i32> = self
+            .output
             .iter()
             .map(|out| {
-
                 self.patterns
                     .iter()
-                    .filter(|z| vec_content_matches(&z.1, out))
+                    .filter(|z| vec_content_matches(z.1, out))
                     .map(|filtered| *filtered.0 as i32)
-                    .next().unwrap()
+                    .next()
+                    .unwrap()
+            })
+            .collect();
 
-            }).collect();
-            
-         (numbers[0] * 1000) + (numbers[1] * 100) + (numbers[2] * 10) + numbers[3]
+        (numbers[0] * 1000) + (numbers[1] * 100) + (numbers[2] * 10) + numbers[3]
     }
 }
 
-fn vec_content_matches( v1 : &[u8] , v2 : &[u8]) -> bool {
-
-    
+fn vec_content_matches(v1: &[u8], v2: &[u8]) -> bool {
     if v1.len() != v2.len() {
         return false;
     }
 
-    let cnd = v1.iter()
-                .filter( | z | !v2.contains( z ) )
-                .count( ) == 0;
+    let cnd = v1.iter().filter(|z| !v2.contains(z)).count() == 0;
 
+    let cnd2 = v2.iter().filter(|z| !v1.contains(z)).count() == 0;
 
-      let cnd2 =  v2.iter()
-            .filter( | z | !v1.contains( z ) )
-            .count() == 0;
-
-    cnd && cnd2 
+    cnd && cnd2
 }
 
 fn find_patterns(list: Vec<&str>) -> HashMap<u8, Vec<u8>> {
@@ -97,33 +91,31 @@ fn find_patterns(list: Vec<&str>) -> HashMap<u8, Vec<u8>> {
             2 => Some((1, chars_to_u8(d))),
             _ => None,
         })
-        .filter(|z| z.is_some())
-        .map(|z| z.unwrap())
+        .flatten()
         .collect();
 
     list.iter()
         .map(|&d| {
             if d.len() == 5 {
                 if let Some(conv) = is_5(d, &result) {
-                    return Some((5 as u8, conv));
+                    return Some((5_u8, conv));
                 }
                 if let Some(conv) = is_3(d, &result) {
-                    return Some((3 as u8, conv));
+                    return Some((3_u8, conv));
                 }
                 return Some((2, chars_to_u8(d)));
             } else if d.len() == 6 {
                 if let Some(conv) = is_9(d, &result) {
-                    return Some((9 as u8, conv));
+                    return Some((9_u8, conv));
                 }
                 if let Some(conv) = is_6(d, &result) {
-                    return Some((6 as u8, conv));
+                    return Some((6_u8, conv));
                 }
                 return Some((0, chars_to_u8(d)));
             }
             None
         })
-        .filter(|z| z.is_some())
-        .map(|z| z.unwrap())
+        .flatten()
         .collect::<Vec<(u8, Vec<u8>)>>()
         .into_iter()
         .for_each(|z| {
@@ -174,7 +166,7 @@ fn is_5(test: &str, known: &HashMap<u8, Vec<u8>>) -> Option<Vec<u8>> {
         .get(&4)
         .unwrap()
         .iter()
-        .filter(|z| c_vec.contains(&z))
+        .filter(|z| c_vec.contains(z))
         .count();
 
     if c_vec.len() == 3 && diff_from_4 == 2 {
