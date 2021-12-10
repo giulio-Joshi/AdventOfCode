@@ -25,6 +25,41 @@ fn find_low( points: &Vec<Vec<char>>) -> Vec<u8> {
 }
 
 
+fn find_basin( points: &Vec<Vec<char>>) -> Vec<u8> {
+
+    let mut low_points : Vec<(usize,usize)> = vec!();
+    
+    for x in 0..points.len() {
+
+        let mut is_head = None;
+        let mut slice_start = 0;
+        let mut slice_end = x+2;
+
+        if x == (points.len()-1){
+            slice_end = x+1;
+            is_head = Some(false);
+        } else if  x == 0 {
+            is_head = Some(true);
+        } else {
+            slice_start= x-1;
+        }
+
+        for y in 0..points[x].len() {
+
+            if is_less_in_group( points[x][y], x, &points[slice_start..slice_end], is_head) {
+                low_points.push( (x,y));
+            }
+        }
+
+    }
+
+
+    println!("{:?}", low_points);
+
+    vec!()
+}
+
+
 fn filter_slice( x: &[Vec<char>], head : Option<bool>) -> Vec<char> {
 
     let mut all_results= vec!();
@@ -92,7 +127,7 @@ fn is_less_in_group( value: char, index: usize, group: &[Vec<char>], head: Optio
 
 #[cfg(test)]
 mod test {
-    use crate::{find_low, convert};
+    use crate::{find_low, convert, find_basin};
 
 
     #[test]
@@ -100,12 +135,18 @@ mod test {
 
         let expected = vec!( 1,0,5,5);
 
-        let found = find_low( &convert(data())) ;
+        let smoke = convert(data());
+
+        let found = find_low( &smoke)  ;
 
 
         assert_eq!(expected, found);
         let total : u32 = found.into_iter().map( |z|  z as u32 +1_u32).sum() ;
         assert_eq!(15,total);
+
+
+        let basin_total = find_basin( &smoke).into_iter().map( |z|  z as i32 +1_i32).product();
+        assert_eq!(1134,basin_total);
     }
 
     fn data() -> &'static str {
