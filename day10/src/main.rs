@@ -101,7 +101,7 @@ fn progress_count( input : &str) -> i64 {
 
 
         if parsed.len() > 0 {
-            robaccia.into_iter().product()
+            parsed.into_iter().product()
         } else {
             0_i64
         }
