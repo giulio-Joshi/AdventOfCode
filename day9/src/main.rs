@@ -1,12 +1,17 @@
-use std::fs;
+use std::{fs, collections::HashSet};
 fn main() {
     let file_content = fs::read_to_string("day9/input.txt").expect("Can't find input");
     let result = find_low(&convert(&file_content));
     let total: u32 = result.into_iter().map(|z| z as u32 + 1_u32).sum();
+
     println!("Solution: {}", total);
+
+    let mut basin_total = find_basins(&convert(&file_content));
+    basin_total.sort_by( |a,b| b.cmp(a));
+    println!("Solution basins: {}", basin_total.iter().take(3).product::<i64>() );
 }
 
-fn find_low(points: &Vec<Vec<char>>) -> Vec<u8> {
+fn find_low(points: &[Vec<char>]) -> Vec<u8> {
     let mut all_lows: Vec<char> = filter_slice(&points[0..2], Some(true));
 
     all_lows.append(
@@ -24,34 +29,103 @@ fn find_low(points: &Vec<Vec<char>>) -> Vec<u8> {
     all_lows.into_iter().map(|x| x as u8 - b'0').collect()
 }
 
-fn find_basin(points: &Vec<Vec<char>>) -> Vec<u8> {
-    let mut low_points: Vec<(usize, usize)> = vec![];
+fn find_basins(points: &[Vec<char>]) -> Vec<i64> {
+    let mut basins: Vec<HashSet<(usize, usize)>> = vec!();
 
-    for x in 0..points.len() {
-        let mut is_head = None;
-        let mut slice_start = 0;
-        let mut slice_end = x + 2;
-
-        if x == (points.len() - 1) {
-            slice_end = x + 1;
-            is_head = Some(false);
-        } else if x == 0 {
-            is_head = Some(true);
-        } else {
-            slice_start = x - 1;
-        }
-
+    for x in 0..points.len(){
         for y in 0..points[x].len() {
-            if is_less_in_group(points[x][y], x, &points[slice_start..slice_end], is_head) {
-                low_points.push((x, y));
+            if !points[x][y].eq(&'9') {
+                assign_to_basin(&x, &y, &mut basins);
             }
         }
     }
 
-    println!("{:?}", low_points);
+    while let Some( mut merge ) = merge_basins( &basins) {
 
-    vec![]
+        //println!("Basin {} and {} are contigous", merge.0, merge.1);
+        
+        let travasa = basins.remove(merge.0);
+        if merge.1 > merge.0 {
+            merge.1 -= 1;
+        }
+
+        travasa.into_iter()
+            .for_each( |copy |  {basins.get_mut(merge.1).unwrap().insert( copy);} );
+        
+    }
+
+    //println!("Found basins:\n\n");
+
+    basins.iter()
+        .map(|k| k.len() as i64)
+        .collect()
 }
+
+
+
+fn assign_to_basin( x: &usize, y: &usize, basins: &mut Vec<HashSet<(usize,usize)>> ){
+
+
+    (0..basins.len()).for_each(|basin_idx| {
+
+        if let Some(_nearest) = basins[basin_idx]
+                .iter()
+                .find(| &content| points_touch( &(*x,*y) , content)){
+
+                basins[basin_idx].insert( (*x,*y));
+                return;
+        }
+
+    });
+    
+    let mut new_basin : HashSet<(usize,usize)> = HashSet::new();
+    new_basin.insert((*x,*y));
+    basins.push( new_basin);
+
+}
+
+
+/// Will merge touching basins
+fn merge_basins( points: &[HashSet<(usize,usize)>] ) -> Option<(usize,usize)>{
+
+    for x in 0..points.len() {
+
+        for t in 0..points.len(){
+
+            if t == x {
+                continue;
+            }
+            if  points[x].iter()
+                .find( | &other|  
+                        points[t].iter().any(| inner| points_touch(other, inner)) )
+                        .is_some(){
+
+                            return Some( (x,t));
+                        }        
+        }
+    }
+
+    None
+}
+
+fn points_touch( point : &(usize,usize), other: &(usize,usize)) -> bool 
+{
+    let mut is_near: bool= false;
+                    
+    if point.0 > 0 {
+        is_near |= other.0 == point.0-1 && other.1 == point.1;
+        
+    }
+    if point.1 > 0 {
+        is_near |= other.0 == point.0 && other.1 == point.1-1;
+    }
+
+    is_near |= other.0 == point.0+1 && other.1 == point.1;
+    is_near |= other.0 == point.0 && other.1 == point.1+1;
+
+    is_near
+}
+
 
 fn filter_slice(x: &[Vec<char>], head: Option<bool>) -> Vec<char> {
     let mut all_results = vec![];
@@ -114,7 +188,7 @@ fn is_less_in_group(value: char, index: usize, group: &[Vec<char>], head: Option
 
 #[cfg(test)]
 mod test {
-    use crate::{convert, find_basin, find_low};
+    use crate::{convert, find_low, find_basins};
 
     #[test]
     fn test_0() {
@@ -128,11 +202,11 @@ mod test {
         let total: u32 = found.into_iter().map(|z| z as u32 + 1_u32).sum();
         assert_eq!(15, total);
 
-        let basin_total = find_basin(&smoke)
-            .into_iter()
-            .map(|z| z as i32 + 1_i32)
-            .product();
-        assert_eq!(1134, basin_total);
+        let mut basin_total = find_basins(&smoke);
+
+        basin_total.sort_by( |a,b| b.cmp(a));
+        
+        assert_eq!(1134, basin_total.iter().take(3).product::<i64>() );
     }
 
     fn data() -> &'static str {
