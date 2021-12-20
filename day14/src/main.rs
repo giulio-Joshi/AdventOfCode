@@ -14,10 +14,9 @@ fn main() {
 fn calc_most_less_minus(element_count: HashMap<String, u64>) -> u64 {
     println!("{:?}", element_count);
 
-    let most_common =
-        element_count
-            .iter()
-            .fold(0_u64, |accum, p| if p.1.gt(&accum) { *p.1 } else { accum });
+    let most_common = element_count
+        .iter()
+        .fold(0_u64, |accum, p| if p.1.gt(&accum) { *p.1 } else { accum });
 
     let less_common =
         element_count.iter().fold(

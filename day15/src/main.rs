@@ -2,9 +2,7 @@ fn main() {
     println!("Hello, world!");
 }
 
-
-fn calc_path( ceiling: &str) -> u32 {
-
+fn calc_path(ceiling: &str) -> u32 {
     /*let mut visited : Vec<usize> = vec!();
 
 
@@ -20,28 +18,21 @@ fn calc_path( ceiling: &str) -> u32 {
 
 
         let target_y = position / width;
-        let target_x  = 
+        let target_x  =
 
     }*/
 
-
     0
 }
-
 
 #[cfg(test)]
 mod test {
     use crate::calc_path;
 
-
-
     #[test]
 
-    fn part_01 () {
-
-
-        assert_eq!( 40, calc_path( data() ));
-
+    fn part_01() {
+        assert_eq!(40, calc_path(data()));
     }
 
     fn data() -> &'static str {

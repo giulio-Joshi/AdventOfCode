@@ -2,13 +2,12 @@ fn main() {
     println!("Hello, world!");
 }
 
-
-struct Point{
+struct Point {
     x: i64,
-    y: i64
+    y: i64,
 }
 
-struct Target{ 
+struct Target {
     top: Point,
-    bottom: Point
+    bottom: Point,
 }
