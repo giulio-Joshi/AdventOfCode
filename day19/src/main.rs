@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::iter::Map;
-use std::{collections::HashSet, fs, io::ErrorKind, str::FromStr};
 use std::slice::Iter;
+use std::{collections::HashSet, fs, io::ErrorKind, str::FromStr};
 
 fn main() {
     let file_content = fs::read_to_string("day19/input.txt").expect("Can't find input");
@@ -23,19 +23,49 @@ enum Face {
 
 impl Face {
     fn iterator() -> Iter<'static, Face> {
-        static FACES : [Face; 6] = [Face::Up, Face::Down, Face::Left, Face::Right, Face::Front,Face::Back];
+        static FACES: [Face; 6] = [
+            Face::Up,
+            Face::Down,
+            Face::Left,
+            Face::Right,
+            Face::Front,
+            Face::Back,
+        ];
         FACES.iter()
     }
 
-    fn orient( &self, pos: &Position) -> Position {
-
+    fn orient(&self, pos: &Position) -> Position {
         match self {
-            Up => { Position{ x: pos.x , y: pos.y , z: pos.z} },
-            Down => { Position{ x: pos.x , y: pos.y , z: - pos.z} },
-            Left => { Position{ x: pos.x , y: -pos.y , z: pos.z} },
-            Right => { Position{ x: -pos.x , y: -pos.y , z: pos.z} },
-            Front => { Position{ x: -pos.x , y: pos.y , z: pos.z} },
-            Back => { Position{ x: pos.x , y: pos.y , z: pos.z} },
+            Up => Position {
+                x: pos.x,
+                y: pos.y,
+                z: pos.z,
+            },
+            Down => Position {
+                x: pos.x,
+                y: pos.y,
+                z: -pos.z,
+            },
+            Left => Position {
+                x: pos.x,
+                y: -pos.y,
+                z: pos.z,
+            },
+            Right => Position {
+                x: -pos.x,
+                y: -pos.y,
+                z: pos.z,
+            },
+            Front => Position {
+                x: -pos.x,
+                y: pos.y,
+                z: pos.z,
+            },
+            Back => Position {
+                x: pos.x,
+                y: pos.y,
+                z: pos.z,
+            },
         }
     }
 }
@@ -50,7 +80,12 @@ enum Rotation {
 
 impl Rotation {
     fn iterator() -> Iter<'static, Rotation> {
-        static ROTATIONS : [Rotation; 4] = [Rotation::Snake,Rotation::Sheep, Rotation::Stars, Rotation::Ouch];
+        static ROTATIONS: [Rotation; 4] = [
+            Rotation::Snake,
+            Rotation::Sheep,
+            Rotation::Stars,
+            Rotation::Ouch,
+        ];
         ROTATIONS.iter()
     }
 }
@@ -61,7 +96,6 @@ struct Orientation {
     rotation: Rotation,
 }
 
-
 impl Orientation {
     fn new(face: Face, rotation: Rotation) -> Self {
         Orientation { face, rotation }
@@ -69,7 +103,7 @@ impl Orientation {
 
     /*fn orient( &self, position: &Position) -> Position {
 
-        //match self.rotation 
+        //match self.rotation
 
     }*/
 }
@@ -139,7 +173,7 @@ struct Scanner {
     position: Option<Position>,
     orientation: Option<Orientation>,
     beacons: Vec<Position>,
-    permutations: Option<HashMap<Orientation, Vec<Position>>>
+    permutations: Option<HashMap<Orientation, Vec<Position>>>,
 }
 
 impl FromStr for Scanner {
@@ -167,7 +201,7 @@ impl FromStr for Scanner {
             orientation: None,
             position: None,
             beacons,
-            permutations: None
+            permutations: None,
         })
     }
 }
@@ -186,25 +220,16 @@ impl Scanner {
             scanners[0].position = Some(Position::new(&[0, 0, 0]));
             scanners[0].orientation = Some(Orientation::new(Face::Up, Rotation::Snake));
         } else {
-            scanners
-                .iter_mut()
-                .skip(1)
-                .for_each(Scanner::spin);
-
+            scanners.iter_mut().skip(1).for_each(Scanner::spin);
         }
 
         scanners
     }
 
-
-    fn spin(&mut self){
-
+    fn spin(&mut self) {
         if self.orientation.is_some() {
             return;
         }
-
-        
-        
     }
 
     fn overlaps(&self, other: &Scanner) -> Vec<Position> {
