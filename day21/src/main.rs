@@ -1,5 +1,5 @@
 fn main() {
-    let finished_game = GameResult::brute_force_game( 8,4);
+    let finished_game = GameResult::brute_force_game( 8,4,1000,1);
     println!("{:?}", finished_game);
     println!("Your guess would be: {}", finished_game.losing_score() * finished_game.rolls);
 }
@@ -13,24 +13,25 @@ struct GameResult {
 
 impl GameResult{
 
-    fn brute_force_game( p1_start: usize, p2_start: usize )  -> Self {
 
-        let mut game = GameResult { player_position : vec!(p1_start, p2_start) , player_score: vec!(0,0), rolls: 1};
+    fn brute_force_game( p1_start: usize, p2_start: usize, winning: usize , starting_roll : usize)  -> Self {
 
-        while game.player_score.iter().max().unwrap() < &1000  {
-            
+        let mut game = GameResult { player_position : vec!(p1_start, p2_start) , player_score: vec!(0,0), rolls: starting_roll};
+
+        while game.player_score.iter().max().unwrap() < &winning  {
+
             game.player_position[0]= calc_pos_score( game.player_position[0], calc_step(game.rolls, 100, 3));
             game.player_score[0]+= game.player_position[0];
             game.rolls+=3;
 
-            if game.player_score[0] < 1000 {
+            if game.player_score[0] < winning {
                 let go = calc_pos_score( game.player_position[1], calc_step(game.rolls, 100, 3));
                 game.player_position[1]= go;
                 game.player_score[1]+= game.player_position[1];
                 game.rolls+=3;
             }
         }
-        game.rolls-=1;
+        game.rolls-=starting_roll;
         game
     }
 
@@ -69,11 +70,17 @@ mod test {
     use crate::{GameResult, calc_pos_score, calc_step};
 
 
+    #[test]
+    fn winning_diract( ) {
+        GameResult::dirac_win(4,8,21);
+
+        assert_eq!(15,calc_step(4, 100, 3));
+    }
 
     #[test]
     fn brute_force( ){
 
-        let finished_game = GameResult::brute_force_game( 4,8);
+        let finished_game = GameResult::brute_force_game( 4,8, 1000, 1);
 
         assert_eq!(745, finished_game.player_score[1]);
         assert_eq!(993, finished_game.rolls);
