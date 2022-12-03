@@ -177,7 +177,7 @@ mod test {
         assert_eq!(3 , battles.len());
 
         assert_eq!(15, strategy_one( &battles ));
-        assert_eq!(12, strategy_two( &data));
+        assert_eq!(12, strategy_two( data));
     }
 
     fn data() -> &'static str {

@@ -28,7 +28,7 @@ fn sum_common_content( sacks: &[(String,String)]) -> u32 {
 fn sum_common_by_group( sacks: &[String], group_size: usize ) -> u32 {
 
     sacks.chunks(group_size)
-        .map(| c| find_common_chunks(c))
+        .map(find_common_chunks)
         .collect::<Vec<String>>()
         .iter()
         .map(letter_convert)
