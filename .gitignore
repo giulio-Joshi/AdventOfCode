@@ -1,14 +1,6 @@
-<<<<<<< HEAD
-<<<<<<< HEAD
+# 
 .directory
+# 
+.vscode/*
 /target
 /data/*
-=======
-/target
-aoc_2021.code-workspace
-day13/output.png
->>>>>>> rust_2021/master
-=======
-/target
-/data/*
->>>>>>> rust_2020/master
