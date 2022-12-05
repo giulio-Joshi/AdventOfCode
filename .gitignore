@@ -1,3 +1,9 @@
+<<<<<<< HEAD
 .directory
 /target
 /data/*
+=======
+/target
+aoc_2021.code-workspace
+day13/output.png
+>>>>>>> rust_2021/master
