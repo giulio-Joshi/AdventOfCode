@@ -1,6 +1,4 @@
-
-pub fn execute( input: &str) {
-
+pub fn execute(input: &str) {
     let turns = turn_list(input);
     let overlapping_turns = calc_overlapping(&turns);
     println!("Found {overlapping_turns} completely overlapping");
@@ -8,13 +6,12 @@ pub fn execute( input: &str) {
     println!("Found {partial_overlap_turns} partially overlapping");
 }
 
-fn calc_partial_overlap( turns: &[Vec<u8>]) -> usize {
-
-    turns.chunks(2)
+fn calc_partial_overlap(turns: &[Vec<u8>]) -> usize {
+    turns
+        .chunks(2)
         .filter(|&how| {
-
             let range1 = how[0][0]..=how[0][1];
-            let range2  = how[1][0]..=how[1][1];
+            let range2 = how[1][0]..=how[1][1];
 
             for i in how[1][0]..=how[1][1] {
                 if range1.contains(&i) {
@@ -27,40 +24,40 @@ fn calc_partial_overlap( turns: &[Vec<u8>]) -> usize {
                 }
             }
             false
-            
-            
-    }).count()
+        })
+        .count()
 }
 
-fn calc_overlapping( turns: &[Vec<u8>]) -> usize {
-
-    turns.chunks(2)
+fn calc_overlapping(turns: &[Vec<u8>]) -> usize {
+    turns
+        .chunks(2)
         .filter(|&how| {
-            (how[0][0] <= how[1][0] && how[0][1] >= how[1][1]) 
-            || (how[1][0] <= how[0][0] && how[1][1] >= how[0][1]) 
-    }).count()
+            (how[0][0] <= how[1][0] && how[0][1] >= how[1][1])
+                || (how[1][0] <= how[0][0] && how[1][1] >= how[0][1])
+        })
+        .count()
 }
 
-fn turn_list( input: &str) -> Vec<Vec<u8>> {
+fn turn_list(input: &str) -> Vec<Vec<u8>> {
+    let mut turns: Vec<Vec<u8>> = vec![];
 
-    let mut turns:Vec<Vec<u8>>  = vec![];
+    input.lines().for_each(|l| {
+        let elves = l.split(',').collect::<Vec<&str>>();
 
-    input.lines()
-        .for_each(|l| {
+        let couple = elves
+            .iter()
+            .map(|&x| {
+                x.split('-')
+                    .map(|v| v.parse::<u8>().unwrap())
+                    .collect::<Vec<u8>>()
+            })
+            .collect::<Vec<Vec<u8>>>();
 
-            let elves =l.split(',')
-                .collect::<Vec<&str>>();
-
-           let couple = elves.iter().map( |&x| {
-                x.split('-').map( |v| v.parse::<u8>().unwrap()).collect::<Vec<u8>>()
-           }).collect::<Vec<Vec<u8>>>();
-
-           turns.append(&mut couple.clone());
-        });
+        turns.append(&mut couple.clone());
+    });
 
     turns
 }
-
 
 #[cfg(test)]
 mod test {
@@ -68,10 +65,8 @@ mod test {
 
     use super::turn_list;
 
-
     #[test]
-    fn test_turn_list(){
-
+    fn test_turn_list() {
         let turns = turn_list(data());
 
         println!("{turns:?}");

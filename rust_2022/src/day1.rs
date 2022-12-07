@@ -1,6 +1,6 @@
 /*
 
- */
+*/
 pub fn execute(raw_input: &str) {
     let stacks = split_stacks(raw_input);
     let mut elven_amount = calc_max_sum(stacks);
