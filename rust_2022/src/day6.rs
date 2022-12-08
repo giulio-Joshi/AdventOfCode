@@ -1,7 +1,4 @@
-use std::{
-    collections::{HashMap, HashSet},
-    ops::Add,
-};
+use std::collections::HashMap;
 
 pub fn execute(raw_input: &str) {
     let marker_position = find_marker(raw_input.lines().next().unwrap(), 4).unwrap();

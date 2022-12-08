@@ -44,7 +44,7 @@ fn turn_list(input: &str) -> Vec<Vec<u8>> {
     input.lines().for_each(|l| {
         let elves = l.split(',').collect::<Vec<&str>>();
 
-        let couple = elves
+        let mut couple = elves
             .iter()
             .map(|&x| {
                 x.split('-')
@@ -53,7 +53,7 @@ fn turn_list(input: &str) -> Vec<Vec<u8>> {
             })
             .collect::<Vec<Vec<u8>>>();
 
-        turns.append(&mut couple.clone());
+        turns.append(&mut couple);
     });
 
     turns
