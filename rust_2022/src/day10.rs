@@ -1,7 +1,4 @@
-use std::{
-    collections::HashMap,
-    ops::{Add, RangeInclusive},
-};
+use std::collections::HashMap;
 
 pub fn execute(raw_input: &str) {
     let values = find_values_at_cycle(raw_input, &[20, 60, 100, 140, 180, 220]);
