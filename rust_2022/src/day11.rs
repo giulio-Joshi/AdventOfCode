@@ -62,28 +62,30 @@ pub fn execute() {
 
     touched_items.sort_by(|a, b| b.cmp(a));
 
-
     println!("After sorting: ");
     println!("1st {}", &touched_items[0]);
-    println!("2nd {}",&touched_items[1]);
-    println!("Got = {} ",touched_items[1]*touched_items[0]);
+    println!("2nd {}", &touched_items[1]);
+    println!("Got = {} ", touched_items[1] * touched_items[0]);
 
     println!("\n====\nNew 10000 rounds\n====\n");
 
     let stress_relief_factor = monkes.iter().map(|m| m.test_div).product();
 
-    let mut touched_items = turn_execute(stacks, &monkes, 10000, &StressRelief::Divisor(stress_relief_factor));
+    let mut touched_items = turn_execute(
+        stacks,
+        &monkes,
+        10000,
+        &StressRelief::Divisor(stress_relief_factor),
+    );
 
     println!("Got all values {touched_items:?}");
 
     touched_items.sort_by(|a, b| b.cmp(a));
 
-
     println!("After sorting: ");
     println!("1st {}", &touched_items[0]);
-    println!("2nd {}",&touched_items[1]);
-    println!("Got = {} ",touched_items[1]*touched_items[0]);
-
+    println!("2nd {}", &touched_items[1]);
+    println!("Got = {} ", touched_items[1] * touched_items[0]);
 }
 
 enum MonkeOperation {
@@ -100,8 +102,8 @@ struct Monke {
 }
 
 enum StressRelief {
-  Classic(u64),
-  Divisor(u64)
+    Classic(u64),
+    Divisor(u64),
 }
 
 impl Monke {
@@ -115,23 +117,30 @@ impl Monke {
     }
 
     fn throws_to_first(&self, item: &mut u64, worry_level: &StressRelief) -> bool {
-
-      match worry_level {
-        StressRelief::Classic(divide)  => { *item /= divide;},
-        StressRelief::Divisor(divisor) => { *item %= divisor; },
-      }
-      (*item % self.test_div) == 0
+        match worry_level {
+            StressRelief::Classic(divide) => {
+                *item /= divide;
+            }
+            StressRelief::Divisor(divisor) => {
+                *item %= divisor;
+            }
+        }
+        (*item % self.test_div) == 0
     }
 }
 
-fn turn_execute(mut stacks: Vec<VecDeque<u64>>, monkes: &[Monke], turns: usize, worry: &StressRelief) -> Vec<usize> {
+fn turn_execute(
+    mut stacks: Vec<VecDeque<u64>>,
+    monkes: &[Monke],
+    turns: usize,
+    worry: &StressRelief,
+) -> Vec<usize> {
     let mut count_inspections = vec![0; monkes.len()];
 
     for _turn in 0..turns {
         monkes.iter().enumerate().for_each(|(monke_id, monke)| {
             while !stacks[monke_id].is_empty() {
                 if let Some(item) = stacks[monke_id].pop_front() {
-                    
                     count_inspections[monke_id] += 1;
 
                     let mut new_item = monke.apply_operation(item);
@@ -183,7 +192,8 @@ mod test {
                 monke_route: [0, 1],
             },
         ];
-        let mut touched_items = turn_execute(stacks.clone(), &monkes, 20, &StressRelief::Classic(3));
+        let mut touched_items =
+            turn_execute(stacks.clone(), &monkes, 20, &StressRelief::Classic(3));
         assert_eq!(101, touched_items[0]);
         assert_eq!(105, touched_items[3]);
 
@@ -191,7 +201,12 @@ mod test {
 
         assert_eq!(10605, touched_items[0] * touched_items[1]);
 
-        let mut touched_items = turn_execute(stacks, &monkes, 10000, &StressRelief::Divisor(23*19*13*17));
+        let mut touched_items = turn_execute(
+            stacks,
+            &monkes,
+            10000,
+            &StressRelief::Divisor(23 * 19 * 13 * 17),
+        );
         assert_eq!(52166, touched_items[0]);
         assert_eq!(52013, touched_items[3]);
 

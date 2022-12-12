@@ -7,6 +7,7 @@ use std::{env, fs};
 mod day1;
 mod day10;
 mod day11;
+mod day12;
 mod day2;
 mod day3;
 mod day4;
@@ -24,7 +25,7 @@ fn main() {
         .last()
         .unwrap_or(&"_".to_owned())
         .parse::<u8>()
-        .unwrap_or(11);
+        .unwrap_or(12);
 
     debug!("Requested day {day}");
 
@@ -32,6 +33,7 @@ fn main() {
     let raw_input = fs::read_to_string(input_file).expect("Unable to parse file");
 
     match day {
+        12 => day12::execute(&raw_input),
         11 => day11::execute(), // 😫 tired of parsing
         10 => day10::execute(&raw_input),
         9 => day9::execute(&raw_input),
